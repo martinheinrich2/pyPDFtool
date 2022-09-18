@@ -13,7 +13,7 @@ to implement zoom functionality in the PDF-Viewer.
 
 
 # Language/Framework/Libraries
-Python/Tkinter
-PyPDF2
-PyMuPDF
-tkPDFViewer
+Python/Tkinter  
+PyPDF2  
+PyMuPDF  
+tkPDFViewer  
