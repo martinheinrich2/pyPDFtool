@@ -1,2 +1,2 @@
-PyMuPDF==1.20.2
-PyPDF2==2.10.8
+PyMuPDF<=1.23.2
+pypdf<=3.15.4

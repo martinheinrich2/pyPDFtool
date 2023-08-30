@@ -1,6 +1,5 @@
 import os
-import time
-from PyPDF2 import PdfReader, PdfWriter, PdfMerger
+from pypdf import PdfReader, PdfWriter, PdfMerger
 import tkinter as tk
 from tkinter import BOTH, LEFT, RIGHT, ttk, filedialog, Frame
 import tkPDFViewer
@@ -110,6 +109,7 @@ class App(tk.Tk):
             print("oops this should not have been called!")
 
     def load_pdf(self):
+        """Load pdf file, extract number of pages and display pdf"""
         self.pdf_reader = None
         self.pdf_name = self.open_filename()
         # Read PDF as binary file
@@ -118,6 +118,7 @@ class App(tk.Tk):
         self.show_pdf()
 
     def merge_pdf(self):
+        """Merge selected pdf files"""
         self.pdf_merger = PdfMerger()
         self.input_files = filedialog.askopenfilenames(initialdir=os.getcwd(), title="Open File",
                                                        filetypes=self.filetypes)
@@ -132,14 +133,14 @@ class App(tk.Tk):
         print('Merge complete!')
 
     def open_filename(self):
-        # Get filename from dialog
+        """Get the filename from tkinter filedialog and return filename"""
         self.filename = filedialog.askopenfilename(initialdir=os.getcwd(), title="Open File",
                                                    filetypes=self.filetypes)
         print(self.filename)
         return self.filename
 
     def rotate_pdf_page(self):
-        # check if there are page(s) to rotate and create list of pages to rotate
+        """check if there are page(s) to rotate and create list of pages to rotate"""
         if self.rotate_page.get():
             self.pages_to_rotate = [int(s) for s in self.rotate_page.get().split(',')]
         else:
@@ -152,13 +153,14 @@ class App(tk.Tk):
         self.numof_pages = len(self.pdf_reader.pages)
         if self.pdf_reader:
             print("pdf loaded")
-            # iterate over range of pages and rotate only those in self.pages
+            # iterate over range of pages and rotate by 90 degrees only those in self.pages
             for page in range(self.numof_pages):
                 if page in self.pages_to_rotate:
-                    self.page_rotate = self.pdf_reader.getPage(page).rotateClockwise(90)
-                    self.pdf_writer.add_page(self.page_rotate)
+                    self.pdf_writer.add_page(self.pdf_reader.pages[page])
+                    self.pdf_writer.pages[page].rotate(90)
                 else:
-                    self.pdf_writer.add_page(self.pdf_reader.getPage(page))
+                    self.pdf_writer.add_page(self.pdf_reader.pages[page])
+                    self.pdf_writer.pages[page].rotate(90)
             with open(self.temp_file, 'wb') as f_out:
                 self.pdf_writer.write(f_out)
             # Reset everything
@@ -170,12 +172,14 @@ class App(tk.Tk):
             print("load pdf first")
 
     def save_pdf(self):
+        """Ask for filename and save pdf file"""
         self.output_file = filedialog.asksaveasfilename(initialdir=os.getcwd(), title='Save as',
                                                         filetypes=self.filetypes)
         with open(self.output_file, "wb") as f_out:
             self.pdf_writer.write(f_out)
 
     def show_pdf(self):
+        """Display pdf file on screen"""
         # Destroy old instance in case a previous pdf is loaded
         if self.variable2:
             self.variable2.destroy()
@@ -189,16 +193,19 @@ class App(tk.Tk):
         self.variable2.pack()
 
     def split_pdf(self):
+        """Split entire pdf file in separate pages and save as Page_XX.pdf, where XX is
+        replaced with the page number."""
         if self.pdf_reader:
-            for page in range(self.pdf_reader.getNumPages()):
+            for page in range(len(self.pdf_reader.pages)):
                 self.pdf_writer = PdfWriter()
-                self.pdf_writer.add_page(self.pdf_reader.getPage(page))
+                self.pdf_writer.add_page(self.pdf_reader.pages[page])
                 with open(f"Page_{page}.pdf", "wb") as f_out:
                     self.pdf_writer.write(f_out)
         else:
             print("no document to split")
 
     def zoom_in(self):
+        """Zoom into document in 15 dpi steps."""
         # Destroy existing old instance first
         if self.variable2:
             self.variable2.destroy()
@@ -213,6 +220,7 @@ class App(tk.Tk):
         self.variable2.pack()
 
     def zoom_out(self):
+        """Zoom out document in 15 dpi steps."""
         # Destroy existing old instance first
         if self.variable2:
             self.variable2.destroy()
@@ -227,13 +235,14 @@ class App(tk.Tk):
         self.variable2.pack()
 
     def end_prog(self):
+        """Clear up temporary files."""
         if os.path.exists('temp_rotated.pdf'):
             os.remove('temp_rotated.pdf')
         if os.path.exists('temp_rotated1.pdf'):
             os.remove('temp_rotated1.pdf')
         tk.Tk.destroy(self)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     app = App()
     app.mainloop()
